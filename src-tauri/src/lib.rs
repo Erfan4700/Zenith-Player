@@ -1,12 +1,14 @@
-use tauri::{State, Window, Manager}; // اضافه کردن Manager برای دسترسی به state
+use tauri::{State, Window, Manager, Emitter};
 use std::sync::Mutex;
+
+use tauri_plugin_clipboard_manager::ClipboardExt;
+
 
 pub struct PinState {
     pub mode: Mutex<String>,
     pub is_playing: Mutex<bool>,
 }
 
-// تعریف یک استیت جدید برای ذخیره مسیر فایل اولیه
 pub struct StartupState {
     pub file_path: Mutex<Option<String>>,
 }
@@ -56,19 +58,43 @@ fn report_video_status(window: Window, is_playing: bool, state: State<'_, PinSta
     Ok(())
 }
 
-// دستور جدید برای تحویل مسیر فایل به فرانت‌اند
 #[tauri::command]
 fn get_startup_file(state: State<'_, StartupState>) -> Option<String> {
     let mut path_lock = state.file_path.lock().unwrap();
-    path_lock.take() // بازگرداندن مقدار و خالی کردن آن برای جلوگیری از لود مجدد
+    path_lock.take()
+}
+
+// تابع کمکی برای پیدا کردن اولین مسیر فایل معتبر در میان آرگومان‌ها
+fn find_valid_file_path(args: &[String]) -> Option<String> {
+    args.iter().skip(1).find_map(|arg| {
+        let p = std::path::Path::new(arg);
+        if p.is_file() {
+            Some(arg.clone())
+        } else {
+            None
+        }
+    })
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
-        // مدیریت استیت‌ها
+        // 👈 پلاگین مدیریت ارسال فایل هنگام باز بودن برنامه
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            if let Some(file_path) = find_valid_file_path(&args) {
+                // ارسال مسیر فایل به فرانت‌اند
+                let _ = app.emit("open-file-from-system", file_path);
+            }
+            // فوکوس روی پنجره موجود
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.unminimize();
+                let _ = window.set_focus();
+            }
+        }))
         .manage(PinState {
             mode: Mutex::new("off".to_string()),
             is_playing: Mutex::new(false),
@@ -76,17 +102,13 @@ pub fn run() {
         .manage(StartupState {
             file_path: Mutex::new(None),
         })
-        // بررسی آرگومان‌های خط فرمان هنگام لود اولیه
+        // 👈 خواندن فایل وقتی برنامه بسته بوده و تازه اجرا شده
         .setup(|app| {
             let args: Vec<String> = std::env::args().collect();
-            if args.len() > 1 {
-                let potential_path = &args[1];
-                // بررسی وجود داشتن فایل در سیستم کاربر
-                if std::path::Path::new(potential_path).exists() {
-                    let state = app.state::<StartupState>();
-                    let mut path_lock = state.file_path.lock().unwrap();
-                    *path_lock = Some(potential_path.clone());
-                }
+            if let Some(file_path) = find_valid_file_path(&args) {
+                let state = app.state::<StartupState>();
+                let mut path_lock = state.file_path.lock().unwrap();
+                *path_lock = Some(file_path);
             }
             Ok(())
         })
@@ -94,8 +116,45 @@ pub fn run() {
             shadow_pin_control,
             report_video_status,
             perform_window_action,
-            get_startup_file // ثبت دستور جدید
+            get_startup_file,
+            copy_image_to_clipboard,
+            copy_text_to_clipboard
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+
+
+#[tauri::command]
+fn copy_image_to_clipboard(app: tauri::AppHandle, png_bytes: Vec<u8>) -> Result<(), String> {
+    // ۱. رمزگشایی بایت‌های PNG به داده‌های خام RGBA
+    let decoded = image::load_from_memory(&png_bytes)
+        .map_err(|e| format!("خطا در رمزگشایی تصویر: {}", e))?
+        .to_rgba8();
+
+    let (width, height) = decoded.dimensions();
+    let rgba_raw = decoded.into_raw();
+
+    // ۲. ساخت تصویر تائوری با استفاده از متد new_owned
+    let img = tauri::image::Image::new_owned(rgba_raw, width, height);
+    
+    // ۳. کپی مستقیم در کلیپ‌بورد سیستم‌عامل
+    app.clipboard().write_image(&img)
+        .map_err(|e| format!("خطا در کلیپ‌بورد ویندوز: {}", e))?;
+    
+    Ok(())
+}
+
+
+#[tauri::command]
+fn copy_text_to_clipboard(app: tauri::AppHandle, text: String) -> Result<(), String> {
+    app.clipboard().write_text(text).map_err(|e| format!("خطا در کلیپ‌بورد: {}", e))?;
+    Ok(())
+}
+
+
+
+
+
+
+

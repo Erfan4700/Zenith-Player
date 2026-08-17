@@ -153,8 +153,9 @@
         video.invert-luma { filter: invert(1) hue-rotate(180deg); }
         video.invert-color { filter: invert(1); }
 
+        
         /* ==========================================================================
-           Subtitles Display
+           Subtitles Display & Capsule Word Hover
            ========================================================================== */
         .subtitle-display {
             position: absolute;
@@ -165,41 +166,147 @@
             text-align: center;
             color: rgba(255, 255, 255, 0.95);
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-            pointer-events: none;
+            pointer-events: auto !important;
             line-height: 1.935;
-            transition: bottom 0.3s var(--fluid-ease), font-size 0.2s, transform 0.2s;
+            transition: bottom 0.3s var(--fluid-ease), font-size 0.2s;
             z-index: 2;
-            will-change: transform, opacity;
+        }
+
+        /* ۱. کادر کلی جمله (فقط این المان پس‌زمینه را دریافت می‌کند) */
+        .subtitle-display > span.sub-line {
+            display: inline;
+            padding: 0.2em 0.6em;
+            border-radius: 8px;
+            background-color: transparent;
+            pointer-events: auto !important;
+            box-decoration-break: clone;
+            -webkit-box-decoration-break: clone;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* 🌟 کپسول‌سازی و هاله اختصاصی دور کلمه 🌟 */
+        /* ==========================================================================
+           استایل جدید، مینیمال و ارگونومیک کپسول کلمات (Soft Glassy Look)
+           ========================================================================== */
+        .sub-word {
+            display: inline-block !important;
+            vertical-align: baseline;
+            background-color: transparent !important;
+            box-shadow: none !important;
+            border: 1px solid transparent !important;
+            border-radius: 6px;
+            padding: 0 3px !important;
+            margin: 0 -3px !important;
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            transform-origin: center center;
+            position: relative;
+            z-index: 1;
+            box-sizing: border-box;
+            color: inherit; /* حفظ رنگ اصلی و طبیعی متن زیرنویس */
+            transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        background-color 0.15s ease,
+                        border-color 0.15s ease,
+                        box-shadow 0.15s ease !important;
+            will-change: transform;
+        }
+
+        /* ۱. حالت هاور: شیشه‌ای نیمه‌شفاف با بردر ملایم فیروزه‌ای/آبی بدون تغییر رنگ متن */
+        .sub-word:hover {
+            z-index: 20 !important;
+            transform: scale(1.08) translateY(-1px) !important;
+            background-color: rgba(56, 189, 248, 0.18) !important; /* رنگ شیشه‌ای مات و شفاف */
+            border-color: rgba(56, 189, 248, 0.55) !important;      /* بردر کریستالی ملایم */
+            color: #ffffff !important;                              /* متن سفید و درخشان */
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.3) !important; /* هایلایت نوری از بالا */
+            backdrop-filter: blur(4px) saturate(1.3);
+            -webkit-backdrop-filter: blur(4px) saturate(1.3);
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6) !important;
+        }
+
+        /* ۲. حالت کپی شدن کلمه: سبز زمردی مینیمال و چشم‌نواز (نه جیغ) */
+        .sub-word.word-copied {
+            transform: scale(1.12) !important;
+            background-color: rgba(52, 211, 153, 0.3) !important; /* سبز زمردی ملایم */
+            border-color: #34d399 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 14px rgba(52, 211, 153, 0.45) !important;
+        }
+
+        /* ۳. حالت کپی شدن کل جمله (Shift + Click یا کلید D) */
+        .subtitle-display.sentence-copied span.sub-line {
+            background-color: rgba(52, 211, 153, 0.22) !important;
+            border: 1px solid rgba(52, 211, 153, 0.45) !important;
+            box-shadow: 0 0 15px rgba(52, 211, 153, 0.35) !important;
+            transition: all 0.3s ease;
+        }
+
+        /* تم روشن (Light Theme) */
+        body.light-theme .sub-word:hover {
+            background-color: rgba(37, 99, 235, 0.12) !important;
+            border-color: rgba(37, 99, 235, 0.4) !important;
+            color: #0f1729 !important;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15) !important;
         }
         .subtitle-display span {
             display: inline;
             padding: 0.2em 0.5em;
             border-radius: 8px;
-            box-decoration-break: clone;
-            -webkit-box-decoration-break: clone;
             background-color: transparent;
-            transition: background-color 0.2s, backdrop-filter 0.2s;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+            pointer-events: auto !important; /* فعال‌سازی قابلیت کلیک روی متن */
+            cursor: pointer !important;
         }
-        .subtitle-display.has-bg-black span {
-            background-color: rgba(0, 0, 0, 0.7);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        
+
+        
+
+        .subtitle-display.sentence-copied span {
+            background-color: rgba(74, 222, 128, 0.4) !important;
+            transition: background-color 0.3s ease;
         }
-        .subtitle-display.has-bg-white span {
-            background-color: rgba(255, 255, 255, 0.85);
+        /* افکت هاور روی زیرنویس */
+        .subtitle-display span:hover {
+            transform: scale(1.04);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        /* انیمیشن فلاش هنگام کپی شدن متن */
+        .subtitle-display span.sub-copied {
+            animation: subCopyFlash 0.4s ease-out;
+        }
+
+        @keyframes subCopyFlash {
+            0% {
+                transform: scale(0.95);
+                background-color: rgba(74, 222, 128, 0.5) !important; /* سبز درخشان */
+                box-shadow: 0 0 20px rgba(74, 222, 128, 0.8);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        .subtitle-display.has-bg-black > span.sub-line {
+            background-color: rgba(0, 0, 0, 0.75) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        }
+        .subtitle-display.has-bg-white > span.sub-line {
+            background-color: rgba(255, 255, 255, 0.85) !important;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-        .subtitle-display.has-bg-blue span {
-            background-color: rgba(33, 150, 243, 0.75);
+        .subtitle-display.has-bg-blue > span.sub-line {
+            background-color: rgba(33, 150, 243, 0.75) !important;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
             backdrop-filter: blur(4px);
         }
-        .subtitle-display.has-bg-solid span {
-            background-color: rgba(0, 0, 0, 1);
+        .subtitle-display.has-bg-solid > span.sub-line {
+            background-color: rgba(0, 0, 0, 1) !important;
             box-shadow: none;
             border-radius: 6px;
         }
-        .subtitle-display.has-bg-glass span {
-            background-color: rgba(255, 255, 255, 0.08); /* افکت شیشه‌ای مات */
+        .subtitle-display.has-bg-glass > span.sub-line {
+            background-color: rgba(255, 255, 255, 0.08) !important;
             backdrop-filter: blur(8px) saturate(1.4);
             -webkit-backdrop-filter: blur(8px) saturate(1.4);
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -4536,9 +4643,96 @@ body.light-theme #pin-button:hover {
     </div>
 
     <script>
+        
         'use strict';
 
         document.addEventListener('DOMContentLoaded', () => {
+        // تابع تبدیل و ایمن‌سازی مسیر فایل‌های محلی ویندوز
+        const convertLocalPathToUrl = (rawPath) => {
+            if (!rawPath) return null;
+            const cleanPath = rawPath.replace(/^["']|["']$/g, '').trim();
+            
+            // استفاده از تبدیل‌گر رسمی تائوری
+            if (window.__TAURI__?.core?.convertFileSrc) {
+                return window.__TAURI__.core.convertFileSrc(cleanPath);
+            } else if (window.__TAURI__?.tauri?.convertFileSrc) {
+                return window.__TAURI__.tauri.convertFileSrc(cleanPath);
+            } else if (window.__TAURI__?.convertFileSrc) {
+                return window.__TAURI__.convertFileSrc(cleanPath);
+            }
+            
+            // پشتیبانی دستی در صورت وجود کاراکترهای خاص مثل # یا فاصله
+            const normalized = cleanPath.replace(/\\/g, '/');
+            return `http://asset.localhost/${encodeURIComponent(normalized).replace(/%2F/g, '/')}`;
+        };
+
+        // تابع مدیریت پخش مستقیم مسیر
+        const handleOpenFilePath = (filePath) => {
+    if (!filePath || typeof filePath !== 'string') return;
+    
+    const cleanPath = filePath.replace(/^["']|["']$/g, '').trim();
+    const videoExtensions = ['.mp4', '.mkv', '.avi', '.mov', '.webm', '.ts', '.flv'];
+    const isVideo = videoExtensions.some(ext => cleanPath.toLowerCase().endsWith(ext));
+    
+    if (!isVideo) return;
+
+    const fileName = cleanPath.split(/[\\/]/).pop() || 'Video';
+    const finalUrl = convertLocalPathToUrl(cleanPath);
+
+    // بررسی اینکه آیا ویدیو از قبل در پلی‌لیست هست یا خیر
+    const existingIndex = loadedVideos.findIndex(v => v.path === cleanPath || v.name === fileName);
+    
+    if (existingIndex !== -1) {
+        // اگر هست، همان را پلی کن
+        loadVideo(existingIndex);
+    } else {
+        // اگر نیست، به پلی‌لیست اضافه کن و سپس لود کن
+        loadedVideos.push({
+            name: fileName,
+            path: cleanPath,
+            url: finalUrl
+        });
+        populatePlaylistUI();
+        loadVideo(loadedVideos.length - 1);
+    }
+
+    showToast(`🎬 Playing: ${fileName}`, 3000);
+};
+
+
+        // ۱. بررسی آرگومان‌های ورودی در زمان استارت اولیه برنامه
+        const checkInitialCliArgs = async () => {
+            if (window.__TAURI__?.core?.invoke) {
+                try {
+                    const args = await window.__TAURI__.core.invoke('get_cli_args');
+                    if (Array.isArray(args)) {
+                        // جستجو در تمام آرگومان‌ها برای پیدا کردن مسیر فایل
+                        for (const arg of args.slice(1)) {
+                            if (arg && !arg.startsWith('-') && !arg.startsWith('/')) {
+                                handleOpenFilePath(arg);
+                                break;
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error fetching CLI args:', err);
+                }
+            }
+        };
+
+        // ۲. گوش دادن به باز شدن فایل جدید در زمان باز بودن برنامه
+        if (window.__TAURI__?.event?.listen) {
+            window.__TAURI__.event.listen('open-video-file', (event) => {
+                if (event.payload) {
+                    handleOpenFilePath(event.payload);
+                }
+            });
+        }
+
+        // اجرا در لحظه لود شدن
+        checkInitialCliArgs();
+
+
             function updateSliderFill(slider) {
                 const min = slider.min || 0;
                 const max = slider.max || 100;
@@ -4548,6 +4742,126 @@ body.light-theme #pin-button:hover {
                 const bgColor = 'rgba(255, 255, 255, 0.15)';
                 slider.style.background = `linear-gradient(to right, ${fillColor} 0%, ${fillColor} ${percent}%, ${bgColor} ${percent}%, ${bgColor} 100%)`;
             }
+
+            // تابع قطعی برای کپی متن در ویندوز از طریق Rust
+            const copyTextToClipboardNative = async (text) => {
+                if (!text) return false;
+                
+                // ۱. ارسال به بک‌اند Rust تائوری
+                if (window.__TAURI__ && window.__TAURI__.core) {
+                    try {
+                        await window.__TAURI__.core.invoke('copy_text_to_clipboard', { text });
+                        return true;
+                    } catch (err) {
+                        console.warn('Rust copy failed, trying web fallback:', err);
+                    }
+                }
+                
+                // ۲. روش پشتیبان از طریق مرورگر
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(text);
+                        return true;
+                    }
+                } catch (e) {}
+
+                // ۳. روش پشتیبان سوم با ایجاد عنصر مخفی
+                try {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            };
+
+            // تابع هوشمند بسته‌بندی کلمات در تگ span
+            // تابع استخراج دقیق کلمه زیر نشانگر ماوس بدون دستکاری متن
+const getWordAtCoords = (x, y) => {
+    let range;
+    if (document.caretRangeFromPoint) {
+        range = document.caretRangeFromPoint(x, y);
+    } else if (document.caretPositionFromPoint) {
+        const pos = document.caretPositionFromPoint(x, y);
+        if (pos) {
+            range = document.createRange();
+            range.setStart(pos.offsetNode, pos.offset);
+            range.collapse(true);
+        }
+    }
+    if (!range || range.startContainer.nodeType !== Node.TEXT_NODE) return '';
+
+    const text = range.startContainer.textContent;
+    const offset = range.startOffset;
+
+    let start = offset;
+    while (start > 0 && !/\s/.test(text[start - 1])) {
+        start--;
+    }
+
+    let end = offset;
+    while (end < text.length && !/\s/.test(text[end])) {
+        end++;
+    }
+
+    const word = text.slice(start, end);
+    return word.replace(/^[.,/#!$%^&*;:{}=\-_`~()?"'«»]+|[.,/#!$%^&*;:{}=\-_`~()?"'«»]+$/g, '').trim();
+};
+            // =================================================================
+            // 📋 تابع کپی متن زیرنویس در کلیپ‌بورد + پاک‌سازی تگ‌های اضافی
+            // =================================================================
+            const copyCurrentSubtitleText = async (type = 'primary') => {
+                let textToCopy = '';
+                let targetElement = null;
+
+                if (type === 'primary') {
+                    targetElement = primarySubDisplay.querySelector('span');
+                    if (currentPrimaryCueIndex !== -1 && activePrimaryCues[currentPrimaryCueIndex]) {
+                        textToCopy = activePrimaryCues[currentPrimaryCueIndex].text;
+                    } else if (primarySubDisplay.textContent.trim()) {
+                        textToCopy = primarySubDisplay.textContent.trim();
+                    }
+                } else {
+                    targetElement = secondarySubDisplay.querySelector('span');
+                    if (currentSecondaryCueIndex !== -1 && activeSecondaryCues[currentSecondaryCueIndex]) {
+                        textToCopy = activeSecondaryCues[currentSecondaryCueIndex].text;
+                    } else if (secondarySubDisplay.textContent.trim()) {
+                        textToCopy = secondarySubDisplay.textContent.trim();
+                    }
+                }
+
+                if (!textToCopy) {
+                    showToast('No active subtitle text to copy.');
+                    return;
+                }
+
+                // پاک‌سازی تگ‌های HTML مثل <i> یا <b> یا استایل‌های فرمت ASS/VTT
+                const cleanText = textToCopy.replace(/<[^>]*>/g, '').replace(/\{[^}]+\}/g, '').trim();
+
+                try {
+                    await navigator.clipboard.writeText(cleanText);
+
+                    // اجرای انیمیشن فلاش روی متن
+                    if (targetElement) {
+                        targetElement.classList.remove('sub-copied');
+                        void targetElement.offsetWidth; // ریست انیمیشن
+                        targetElement.classList.add('sub-copied');
+                    }
+
+                    // نمایش پیام تایید با بخشی از متن
+                    const shortPreview = cleanText.length > 28 ? cleanText.substring(0, 28) + '...' : cleanText;
+                    showToast(`📋 Copied: "${shortPreview}"`, 2000);
+                } catch (err) {
+                    console.error('Failed to copy subtitle:', err);
+                    showToast('Failed to copy subtitle text.');
+                }
+            };
 
             const sliders = document.querySelectorAll('.subtitle-slider');
             sliders.forEach(slider => {
@@ -4612,6 +4926,9 @@ body.light-theme #pin-button:hover {
             const cleanupBlob = (url) => {
                 if (url && url.startsWith('blob:')) {
                     URL.revokeObjectURL(url);
+                }
+                if (previewVideo) {
+                    previewVideo.removeAttribute('src');
                 }
             };
 
@@ -5271,38 +5588,80 @@ body.light-theme #pin-button:hover {
                 return cues;
             };
 
+            // دریافت شناسه ۱۰۰٪ یکتا و مشترک بر اساس نام خالص فایل
             const getCurrentVideoId = () => {
-                if (video.src && !video.src.startsWith('blob:')) return video.src;
-                if (currentVideoIndex >= 0 && loadedVideos[currentVideoIndex]) return loadedVideos[currentVideoIndex].name;
+                // ۱. اگر در پلی‌لیست است، از نام فایل استفاده کن
+                if (currentVideoIndex >= 0 && loadedVideos[currentVideoIndex]) {
+                    return loadedVideos[currentVideoIndex].name;
+                }
+                // ۲. بررسی عنوان بالای پلیر
+                const titleEl = document.getElementById('video-title');
+                if (titleEl && titleEl.textContent && titleEl.textContent !== 'Ready to play...') {
+                    return titleEl.textContent.trim();
+                }
+                // ۳. استخراج مستقیم نام فایل از سورس ویدیو
+                if (video.src) {
+                    try {
+                        const cleanUrl = decodeURIComponent(video.src);
+                        const fileName = cleanUrl.split(/[\\/]/).pop()?.split('?')[0];
+                        if (fileName && fileName !== 'index.html') return fileName;
+                    } catch (e) {}
+                    return video.src;
+                }
                 return null;
             };
+            // ذخیره ایمن زمان پخش با پیشوند اختصاصی و جلوگیری از ذخیره ثانیه‌های ابتدایی
             const savePlaybackPosition = () => {
                 const videoId = getCurrentVideoId();
-                if (!videoId) return;
-                if (video.duration && video.currentTime > video.duration - 5) localStorage.removeItem(videoId);
-                else localStorage.setItem(videoId, video.currentTime);
+                // اگر ویدیویی نیست یا در ۳ ثانیه اول است، زمان ذخیره قبلی را دستکاری نکن
+                if (!videoId || !video.duration || Number.isNaN(video.duration) || video.currentTime < 3) {
+                    return;
+                }
+
+                const storageKey = `zenith_resume_${encodeURIComponent(videoId)}`;
+
+                // اگر ویدیو به ۵ ثانیه آخر رسیده بود، زمان را پاک کن (فیلم تمام شده)
+                if (video.currentTime > video.duration - 5) {
+                    localStorage.removeItem(storageKey);
+                    localStorage.removeItem(videoId); // پاکسازی کلیدهای قدیمی
+                } else {
+                    localStorage.setItem(storageKey, video.currentTime.toString());
+                }
             };
+            // خواندن زمان ذخیره‌شده و پرش به آن
             const checkForSavedPosition = () => {
                 const videoId = getCurrentVideoId();
                 if (!videoId) return;
-                const savedTime = parseFloat(localStorage.getItem(videoId));
-                if (savedTime && savedTime > 5) {
-                    video.addEventListener('seeked', () => updateSubtitles(video.currentTime), { once: true });
+
+                const storageKey = `zenith_resume_${encodeURIComponent(videoId)}`;
+                // بررسی کلید جدید یا کلیدهای قدیمی
+                const rawSaved = localStorage.getItem(storageKey) || localStorage.getItem(videoId);
+                if (!rawSaved) return;
+
+                const savedTime = parseFloat(rawSaved);
+                if (savedTime && savedTime > 3 && (!video.duration || savedTime < video.duration - 5)) {
+                    // پرش آنی به ثانیه قبلی
                     video.currentTime = savedTime;
+                    
+                    // نمایش پیام ادامه پخش (Toast)
+                    resumeToast.classList.add('visible');
+
                     const hideToast = () => {
                         resumeToast.classList.remove('visible');
                         startOverBtn.removeEventListener('click', startOverHandler);
                         closeResumeToastBtn.removeEventListener('click', hideToast);
                     };
+
                     const startOverHandler = () => {
+                        localStorage.removeItem(storageKey);
                         localStorage.removeItem(videoId);
                         video.currentTime = 0;
                         hideToast();
                     };
+
                     startOverBtn.addEventListener('click', startOverHandler);
                     closeResumeToastBtn.addEventListener('click', hideToast);
-                    resumeToast.classList.add('visible');
-                    setTimeout(hideToast, 8000);
+                    setTimeout(hideToast, 7000);
                 }
             };
             const saveSettings = () => {
@@ -5455,21 +5814,44 @@ body.light-theme #pin-button:hover {
             };
 
             // ---------- Video management ----------
+            // ---------- Video management (Fast Start & Unified ID) ----------
             const loadVideo = index => {
                 if (index < 0 || index >= loadedVideos.length) return;
                 currentVideoIndex = index;
-                loadBookmarksForCurrentVideo()
-                updateBookmarkMarkers();
                 cleanupBlob(currentVideoObjectURL);
                 
-                currentVideoObjectURL = URL.createObjectURL(loadedVideos[index]);
-                video.src = currentVideoObjectURL;              
+                const item = loadedVideos[index];
+                let srcToPlay = '';
+
+                if (item instanceof File || item instanceof Blob) {
+                    currentVideoObjectURL = URL.createObjectURL(item);
+                    srcToPlay = currentVideoObjectURL;
+                } else if (item && item.url) {
+                    currentVideoObjectURL = null;
+                    srcToPlay = item.url;
+                }
+                
+                // تنظیم سورس
+                video.src = srcToPlay;
+
                 if (previewVideo) {
                     isPreviewAvailable = true;
-                    previewVideo.removeAttribute('src'); // عدم بارگذاری در رم تا زمان هاور
+                    previewVideo.src = srcToPlay;
                 }
-                video.load();
+
+                // پخش فوری بدون دستور زائد video.load() که ایجاد تاخیر می‌کرد
                 video.play().catch(e => console.error("Playback failed:", e));
+                
+                // هماهنگ‌سازی بوکمارک‌ها و وضعیت UI
+                loadBookmarksForCurrentVideo();
+                updateBookmarkMarkers();
+
+                const videoTitleEl = document.getElementById('video-title');
+                if (videoTitleEl) videoTitleEl.textContent = item.name;
+
+                dropZone.classList.add('hidden');
+                onlineLinkContainer.classList.add('hidden');
+                
                 updatePlaylistHighlight();
                 updateNavButtons();
                 autoSelectSubtitlesForCurrentVideo();
@@ -5498,7 +5880,10 @@ body.light-theme #pin-button:hover {
                     loadBookmarksForCurrentVideo()
                     if (previewVideo) {
                         isPreviewAvailable = !url.includes('.m3u8');
-                        previewVideo.removeAttribute('src');
+                        if (isPreviewAvailable) {
+                            previewVideo.src = url;
+                            previewVideo.load();
+                        }
                     }
                     video.load();
                     updateBookmarkMarkers();
@@ -5566,28 +5951,76 @@ body.light-theme #pin-button:hover {
                 }
                 return (found !== -1) ? { index: found, cue: cues[found] } : { index: -1, cue: null };
             };
+            // تابع هوشمند تبدیل متن به کلمات کپسوله‌شده با حفظ تگ‌های HTML و فاصله‌ها
+            const wrapWordsInCapsules = (text) => {
+                if (!text) return '';
+                // تشخیص و حفظ تگ‌های HTML و قرار دادن کلمات درون تگ span
+                return text.replace(/(<[^>]+>)|([^\s<>]+)/g, (match, tag, word) => {
+                    if (tag) return tag;
+                    return `<span class="sub-word">${word}</span>`;
+                });
+            };
             const updateSubtitles = currentTime => {
                 if (isPrimarySubEnabled) {
                     const { index: pIndex, cue: pCue } = findCueAtTime(activePrimaryCues, currentPrimaryCueIndex, currentTime);
                     if (pIndex !== currentPrimaryCueIndex) {
                         currentPrimaryCueIndex = pIndex;
-                        primarySubDisplay.innerHTML = pCue ? `<span>${pCue.text}</span>` : '';
+                        primarySubDisplay.innerHTML = pCue ? `<span class="sub-line">${wrapWordsInCapsules(pCue.text)}</span>` : '';
                     }
                 } else if (primarySubDisplay.innerHTML !== '') {
                     primarySubDisplay.innerHTML = '';
                     currentPrimaryCueIndex = -1;
                 }
+                
                 if (isSecondarySubEnabled) {
                     const { index: sIndex, cue: sCue } = findCueAtTime(activeSecondaryCues, currentSecondaryCueIndex, currentTime);
                     if (sIndex !== currentSecondaryCueIndex) {
                         currentSecondaryCueIndex = sIndex;
-                        secondarySubDisplay.innerHTML = sCue ? `<span>${sCue.text}</span>` : '';
+                        secondarySubDisplay.innerHTML = sCue ? `<span class="sub-line">${wrapWordsInCapsules(sCue.text)}</span>` : '';
                     }
                 } else if (secondarySubDisplay.innerHTML !== '') {
                     secondarySubDisplay.innerHTML = '';
                     currentSecondaryCueIndex = -1;
                 }
             };
+            const handleSubtitleClick = async (e, displayEl) => {
+                e.stopPropagation();
+
+                // اگر Shift فشرده باشد -> کپی کل جمله
+                if (e.shiftKey) {
+                    const fullText = displayEl.textContent.replace(/<[^>]*>/g, '').replace(/\{[^}]+\}/g, '').trim();
+                    if (fullText) {
+                        const ok = await copyTextToClipboardNative(fullText);
+                        if (ok) {
+                            displayEl.classList.add('sentence-copied');
+                            setTimeout(() => displayEl.classList.remove('sentence-copied'), 350);
+                            const preview = fullText.length > 30 ? fullText.substring(0, 30) + '...' : fullText;
+                            showToast(`📋 Sentence Copied: "${preview}"`, 2000);
+                        }
+                    }
+                    return;
+                }
+
+                // کلیک عادی روی کلمه
+                const targetWordEl = e.target.closest('.sub-word');
+                const wordText = targetWordEl ? targetWordEl.textContent.replace(/^[.,/#!$%^&*;:{}=\-_`~()?"'«»]+|[.,/#!$%^&*;:{}=\-_`~()?"'«»]+$/g, '').trim() : getWordAtCoords(e.clientX, e.clientY);
+
+                if (wordText) {
+                    const ok = await copyTextToClipboardNative(wordText);
+                    if (ok) {
+                        if (targetWordEl) {
+                            targetWordEl.classList.add('word-copied');
+                            setTimeout(() => targetWordEl.classList.remove('word-copied'), 300);
+                        }
+                        showToast(`📋 Word Copied: "${wordText}"`, 1800);
+                    }
+                }
+            };
+
+            primarySubDisplay.addEventListener('click', (e) => handleSubtitleClick(e, primarySubDisplay));
+            secondarySubDisplay.addEventListener('click', (e) => handleSubtitleClick(e, secondarySubDisplay));
+
+
             const autoSelectSubtitlesForCurrentVideo = () => {
                 if (currentVideoIndex < 0 || loadedSubtitles.length === 0) {
                     primarySubSelect.value = "-1";
@@ -6812,18 +7245,38 @@ body.light-theme #pin-button:hover {
                 if (currentVideoIndex + 1 < loadedVideos.length) loadVideo(currentVideoIndex + 1);
             });
             let isTimeUpdatePending = false;
+            let lastSaveTimestamp = 0;
             video.addEventListener('timeupdate', () => {
                 if (!video.duration || isTimeUpdatePending) return;
                 isTimeUpdatePending = true;
 
                 requestAnimationFrame(() => {
-                    if (!isSeeking) progressFilled.style.width = `${(video.currentTime / video.duration) * 100}%`;
+                    // ۱. پر شدن نوار پیشرفت آبی‌رنگ
+                    if (!isSeeking) {
+                        progressFilled.style.width = `${(video.currentTime / video.duration) * 100}%`;
+                    }
+                    
+                    // ۲. شمارشگر ثانیه‌ها و زمان کل (00:00 / 00:00)
                     updateTimeDisplay();
+                    
+                    // ۳. به‌روزرسانی نمایش زیرنویس‌ها
                     updateSubtitles(video.currentTime);
+                    
+                    // ۴. ذخیره هوشمند زمان در حافظه (هر ۲ ثانیه یک‌بار در حین پخش)
+                    const now = Date.now();
+                    if (!video.paused && !isSeeking && (now - lastSaveTimestamp > 2000)) {
+                        savePlaybackPosition();
+                        lastSaveTimestamp = now;
+                    }
+
                     isTimeUpdatePending = false;
                 });
             });
-            video.addEventListener('loadedmetadata', () => { updateTimeDisplay(); checkForSavedPosition(); updateBookmarkMarkers(); });
+            video.addEventListener('loadedmetadata', () => { 
+                updateTimeDisplay(); 
+                checkForSavedPosition(); // بازگردانی ثانیه قبلی به محض لود متادیتا
+                updateBookmarkMarkers(); 
+            });
             video.addEventListener('volumechange', () => {
                 volumeFilled.style.width = `${video.muted ? 0 : video.volume * 100}%`;
                 muteBtn.innerHTML = (video.muted || video.volume === 0) ? muteIcon : volumeIcon;
@@ -7045,22 +7498,49 @@ fullscreenBtn.addEventListener('click', () => {
             });
 
             // ==========================================================================
-            // Thumbnail & Time Hover (Always show time, conditionally show video)
+            // موتور پرسرعت و کم‌مصرف Thumbnail Preview (Ultra-Fast Hardware FastSeek)
             // ==========================================================================
-            let previewSeekTimeout;
-            let isPreviewSeeking = false;
+            let pendingThumbnailSeekTime = null;
+            let isPreviewVideoSeeking = false;
+
             if (previewVideo) {
-                previewVideo.addEventListener('seeked', () => { isPreviewSeeking = false; });
+                previewVideo.muted = true;
+                previewVideo.playsInline = true;
+                previewVideo.preload = 'metadata'; // عدم بافر سنگین در رم
+
+                previewVideo.addEventListener('seeked', () => {
+                    isPreviewVideoSeeking = false;
+                    if (pendingThumbnailSeekTime !== null) {
+                        const nextTime = pendingThumbnailSeekTime;
+                        pendingThumbnailSeekTime = null;
+                        executeFastThumbnailSeek(nextTime);
+                    }
+                });
             }
+
+            const executeFastThumbnailSeek = (targetTime) => {
+                if (!previewVideo || !previewVideo.src || Number.isNaN(targetTime)) return;
+                
+                if (isPreviewVideoSeeking) {
+                    pendingThumbnailSeekTime = targetTime;
+                    return;
+                }
+
+                isPreviewVideoSeeking = true;
+                try {
+                    if (typeof previewVideo.fastSeek === 'function') {
+                        previewVideo.fastSeek(targetTime);
+                    } else {
+                        previewVideo.currentTime = targetTime;
+                    }
+                } catch (e) {
+                    isPreviewVideoSeeking = false;
+                }
+            };
+
             progressBar.addEventListener('mouseleave', () => { 
                 thumbnailPreview.classList.remove('active'); 
-
-                // ⚡ پاک‌سازی کامل بافر تامبنیل و آزاد کردن رم به محض خروج موس
-                if (previewVideo && previewVideo.src) {
-                    previewVideo.pause();
-                    previewVideo.removeAttribute('src');
-                    previewVideo.load(); // این دستور بافر رمزگشایی را فوراً از رم پاک می‌کند
-                }
+                pendingThumbnailSeekTime = null;
             });
 
             let cachedProgressBarRect = null;
@@ -7068,51 +7548,35 @@ fullscreenBtn.addEventListener('click', () => {
                 cachedProgressBarRect = progressBar.getBoundingClientRect(); 
                 if (video.duration && !Number.isNaN(video.duration)) {
                     thumbnailPreview.classList.add('active');
-
-                    // ⚡ بارگذاری تامبنیل در رم فقط زمانی که موس وارد نوار شد
-                    const currentSrc = currentVideoObjectURL || video.src;
-                    if (hoverThumbnailEnabled && isPreviewAvailable && currentSrc) {
-                        if (previewVideo.src !== currentSrc) {
-                            previewVideo.src = currentSrc;
-                        }
-                    }
                 }
             });
-            progressBar.addEventListener('mousemove', throttle((e) => {
+
+            progressBar.addEventListener('mousemove', (e) => {
                 if (!video.duration || Number.isNaN(video.duration) || !cachedProgressBarRect) return;
+
                 if (!hoverThumbnailEnabled) {
-                        thumbnailPreview.classList.add('time-only');
+                    thumbnailPreview.classList.add('time-only');
                 } else {
-                        thumbnailPreview.classList.remove('time-only');
-                    }
-                requestAnimationFrame(() => {
-                    const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--controls-scale')) || 1;
-                    const unscaledX = (e.clientX - cachedProgressBarRect.left) / scale;
-                    const unscaledWidth = cachedProgressBarRect.width / scale;
-                    let p = Math.max(0, Math.min(1, unscaledX / unscaledWidth));
-                    const hoverTime = p * video.duration;
-                    thumbnailTime.textContent = formatTime(hoverTime);
-                    const previewWidth = thumbnailPreview.offsetWidth || (hoverThumbnailEnabled ? 160 : 70);
-                    let positionX = unscaledX;
-                    if (positionX < previewWidth / 2) positionX = previewWidth / 2;
-                    else if (positionX > unscaledWidth - previewWidth / 2) positionX = unscaledWidth - previewWidth / 2;
-                    thumbnailPreview.style.transform = `translateX(-50%) translateY(0) scale(1)`;
-                    thumbnailPreview.style.left = `${positionX}px`;
-                    if (hoverThumbnailEnabled && previewVideo) {
-                        if (!isPreviewSeeking && Math.abs(previewVideo.currentTime - hoverTime) > 0.75) { 
-                            clearTimeout(previewSeekTimeout);
-                            previewSeekTimeout = setTimeout(() => {
-                                isPreviewSeeking = true;
-                                try {
-                                    previewVideo.currentTime = hoverTime;
-                                } catch (err) {
-                                    isPreviewSeeking = false;
-                                }
-                            }, 60);
-                        }
-                    }
-                });
-            }, 50)); 
+                    thumbnailPreview.classList.remove('time-only');
+                }
+
+                const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--controls-scale')) || 1;
+                const unscaledX = (e.clientX - cachedProgressBarRect.left) / scale;
+                const unscaledWidth = cachedProgressBarRect.width / scale;
+                let p = Math.max(0, Math.min(1, unscaledX / unscaledWidth));
+                const hoverTime = p * video.duration;
+
+                thumbnailTime.textContent = formatTime(hoverTime);
+                const previewWidth = thumbnailPreview.offsetWidth || (hoverThumbnailEnabled ? 160 : 70);
+                let positionX = Math.max(previewWidth / 2, Math.min(unscaledWidth - previewWidth / 2, unscaledX));
+                
+                thumbnailPreview.style.transform = `translateX(-50%) translateY(0) scale(1)`;
+                thumbnailPreview.style.left = `${positionX}px`;
+
+                if (hoverThumbnailEnabled && isPreviewAvailable && previewVideo && previewVideo.src) {
+                    executeFastThumbnailSeek(hoverTime);
+                }
+            });
 
             // Screenshot modal events
             closeScreenshotModalBtn.addEventListener('click', closeScreenshotModal);
@@ -7174,20 +7638,36 @@ fullscreenBtn.addEventListener('click', () => {
             });
             copyScreenshotBtn.addEventListener('click', async () => {
                 try {
-                    if (!navigator.clipboard || !window.ClipboardItem) {
-                        showToast('Clipboard is not supported in this browser context.');
-                        return;
-                    }
                     const blob = await getFilteredScreenshotBlob();
                     if (!blob) {
                         showToast('No image to copy.');
                         return;
                     }
-                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-                    showToast('Image copied to clipboard.');
+
+                    // تبدیل تصویر Blob به آرایه بایت‌ها
+                    const arrayBuffer = await blob.arrayBuffer();
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    const bytesArray = Array.from(uint8Array);
+
+                    // 👈 ارسال مستقیم به زبان Rust جهت کپی قطعی در کلیپ‌بورد ویندوز
+                    if (window.__TAURI__ && window.__TAURI__.core) {
+                        await window.__TAURI__.core.invoke('copy_image_to_clipboard', { 
+                            pngBytes: bytesArray 
+                        });
+                        showToast('Image copied to clipboard ✔');
+                        return;
+                    }
+
+                    // حالت Fallback برای زمانی که در مرورگر وب معمولی اجرا می‌شود
+                    if (navigator.clipboard && window.ClipboardItem) {
+                        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                        showToast('Image copied to clipboard ✔');
+                    } else {
+                        showToast('Clipboard not supported in this browser.');
+                    }
                 } catch (e) { 
                     console.error('Copy error:', e);
-                    showToast('Copy failed or permission denied.'); 
+                    showToast('Failed to copy image.'); 
                 }
             });
 
@@ -7463,6 +7943,30 @@ fullscreenBtn.addEventListener('click', () => {
                         break;
                     case 'Minus': 
                         adjustFontSize(e.shiftKey ? secondaryFontsizeSlider : primaryFontsizeSlider, false); 
+                        break;
+                    case 'KeyD': // کلید D برای زیرنویس اول و Shift + D برای زیرنویس دوم
+                        e.preventDefault();
+                        const targetDisplay = e.shiftKey ? secondarySubDisplay : primarySubDisplay;
+                        const rawText = targetDisplay.textContent || '';
+                        const sentence = rawText.replace(/<[^>]*>/g, '').replace(/\{[^}]+\}/g, '').trim();
+
+                        if (sentence) {
+                            copyTextToClipboardNative(sentence).then((ok) => {
+                                if (ok) {
+                                    // 🌟 فعال‌سازی انیمیشن و رنگ سبز زمردی کپی
+                                    targetDisplay.classList.remove('sentence-copied');
+                                    void targetDisplay.offsetWidth; // ریست فوری انیمیشن (Reflow)
+                                    targetDisplay.classList.add('sentence-copied');
+                                    setTimeout(() => targetDisplay.classList.remove('sentence-copied'), 450);
+
+                                    const short = sentence.length > 30 ? sentence.substring(0, 30) + '...' : sentence;
+                                    const subName = e.shiftKey ? 'Subtitle 2' : 'Subtitle 1';
+                                    showToast(`📋 ${subName} Copied: "${short}"`, 2000);
+                                }
+                            });
+                        } else {
+                            showToast(e.shiftKey ? 'No Subtitle 2 text to copy' : 'No Subtitle 1 text to copy', 1500);
+                        }
                         break;
                 }
 
@@ -7749,6 +8253,58 @@ fullscreenBtn.addEventListener('click', () => {
             window.addEventListener('resize', () => {
                 updateBookmarkMarkers();
             });
+
+            // کلیک روی زیرنویس اول (اصلی)
+            primarySubDisplay.addEventListener('click', (e) => {
+                e.stopPropagation(); // جلوگیری از توقف/پخش ویدیو با کلیک روی زیرنویس
+                copyCurrentSubtitleText('primary');
+            });
+
+            // کلیک روی زیرنویس دوم
+            secondarySubDisplay.addEventListener('click', (e) => {
+                e.stopPropagation();
+                copyCurrentSubtitleText('secondary');
+            });
+
+            // تابع کمکی برای تبدیل مسیر فایل ویندوز به URL محلی تائوری
+            const playNativeFilePath = (rawPath) => {
+                if (!rawPath) return;
+                
+                // پاکسازی کوتیشن‌های احتمالی اطراف مسیر در ویندوز
+                const cleanPath = rawPath.replace(/^"|"$/g, '');
+                
+                // استخراج نام ویدیو از مسیر
+                const fileName = cleanPath.split(/[\\/]/).pop();
+                
+                // تبدیل مسیر سیستم فایل به URL قابل خواندن برای المان <video> در تائوری
+                let videoUrl = cleanPath;
+                if (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.convertFileSrc) {
+                    videoUrl = window.__TAURI__.core.convertFileSrc(cleanPath);
+                } else if (window.__TAURI__ && window.__TAURI__.tauri && window.__TAURI__.tauri.convertFileSrc) {
+                    videoUrl = window.__TAURI__.tauri.convertFileSrc(cleanPath);
+                } else {
+                    // پشتیبانی مستقیم از پروتکل استاندارد تائوری
+                    videoUrl = `http://asset.localhost/${encodeURIComponent(cleanPath)}`;
+                }
+
+                // به‌روزرسانی عنوان در نوار ویندوز ۱۱
+                const videoTitleEl = document.getElementById('video-title');
+                if (videoTitleEl) videoTitleEl.textContent = fileName;
+
+                // پخش ویدیو
+                loadOnlineVideo(videoUrl, fileName);
+                showToast(`Opening: ${fileName}`, 3000);
+            };
+
+            // گوش دادن به ایونت‌های ارسالی از Rust
+            if (window.__TAURI__ && window.__TAURI__.event) {
+                window.__TAURI__.event.listen('open-video-file', (event) => {
+                    const filePath = event.payload;
+                    if (filePath && typeof filePath === 'string') {
+                        playNativeFilePath(filePath);
+                    }
+                });
+            }
         });
     </script>
     <script type="module" src="/src/main.ts"></script>

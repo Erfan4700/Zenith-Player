@@ -306,3 +306,74 @@ document.addEventListener('fullscreenchange', async () => {
         }
     }
 });
+
+
+
+
+// =================================================================
+// 🎥 سیستم جامع لود و پخش فایل‌های سیستم (Drag & Drop + Open With)
+// =================================================================
+
+function playLocalPath(filePath: string) {
+    if (!filePath) return;
+
+    try {
+        const { convertFileSrc } = (window as any).__TAURI__.core;
+        
+        // تبدیل مسیر واقعی سیستم‌عامل (مثلاً C:\Videos\movie.mp4) به آدرس قابل پخش
+        const assetUrl = convertFileSrc(filePath);
+        const fileName = filePath.split(/[/\\]/).pop() || "Local Video";
+
+        const videoElement = document.querySelector('video') as HTMLVideoElement;
+        if (videoElement) {
+            videoElement.src = assetUrl;
+            videoElement.load();
+            videoElement.play().catch(err => console.error("Playback failed:", err));
+            
+            // به‌روزرسانی نام در Titlebar
+            if ((window as any).updateTitlebar) {
+                (window as any).updateTitlebar(fileName);
+            }
+        }
+    } catch (err) {
+        console.error("Error playing local file path:", err);
+    }
+}
+
+// اکسپوز به سراسر برنامه
+(window as any).playLocalPath = playLocalPath;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // ۱. بررسی فایل ارسالی هنگام اجرای اولیه برنامه (وقتی برنامه از ابتدا بسته بوده)
+    try {
+        const startupPath: string | null = await invoke('get_startup_file');
+        if (startupPath) {
+            playLocalPath(startupPath);
+        }
+    } catch (err) {
+        console.error("Error getting startup file:", err);
+    }
+
+    // ۲. گوش دادن به فایلی که بعداً روی آیکون درگ می‌شود (وقتی برنامه باز است)
+    const { listen } = (window as any).__TAURI__.event;
+    if (listen) {
+        await listen('open-file-from-system', (event: any) => {
+            const filePath = event.payload as string;
+            if (filePath) {
+                playLocalPath(filePath);
+            }
+        });
+    }
+
+    // ۳. گوش دادن به درگ و دراپ مستقیم فایل‌ها داخل خود پنجره پلیر
+    if (appWindow && appWindow.onDragDropEvent) {
+        await appWindow.onDragDropEvent((event: any) => {
+            if (event.payload && event.payload.type === 'drop') {
+                const paths = event.payload.paths as string[];
+                if (paths && paths.length > 0) {
+                    playLocalPath(paths[0]);
+                }
+            }
+        });
+    }
+});

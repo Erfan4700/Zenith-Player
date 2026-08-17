@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "zenith-player",
-  "version": "0.1.0",
+  "version": "2.1.2",
   "identifier": "com.erfan.zenith-player",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -24,7 +24,11 @@
     }
   ],
   "security": {
-    "csp": null
+    "csp": null,
+    "assetProtocol": {
+        "enable": true,
+        "scope": ["**"]
+      }
   }
 },
   "bundle": {

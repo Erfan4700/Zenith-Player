@@ -11,6 +11,9 @@
     "core:resources:default",
     "dialog:allow-open",
     "fs:allow-read",
-    "fs:allow-write"
+    "fs:allow-write",
+    "core:default",
+    "clipboard-manager:allow-write-image",
+    "clipboard-manager:allow-write-text"
   ]
 }
